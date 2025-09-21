@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>أداة Ping للروابط (بدون IndexNow)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="أرسل إشعارات Ping لخدمات متعددة لتسريع اكتشاف صفحات متجرك أو مدونتك — دون الاعتماد على IndexNow.">
+  <style>
+    :root{
+      --bg: #f7f8fa;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted:#6b7280;
+      --primary:#2563eb;
+      --primary-weak:#eff6ff;
+      --border:#e5e7eb;
+      --chip:#f1f5f9;
+      --chip-active:#dbeafe;
+      --mono:#111827;
+      --ok:#16a34a;
+      --err:#dc2626;
+      --warn:#b45309;
+      --shadow: 0 8px 24px rgba(0,0,0,.06);
+      --radius: 12px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Noto Kufi Arabic",Tahoma,Arial,sans-serif;line-height:1.6;
+    }
+    header{
+      position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--border);
+    }
+    .container{max-width:920px;margin:0 auto;padding:16px}
+    .topbar{display:flex;align-items:center;gap:12px;justify-content:space-between}
+    .left-actions{display:flex;align-items:center;gap:8px}
+    .logo{
+      height:36px;width:auto;object-fit:contain;
+    }
+    .btn{
+      appearance:none;border:1px solid var(--border);background:#fff;color:var(--text);
+      padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600;
+      transition:background .2s,border-color .2s,transform .04s;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .btn.ghost{background:transparent}
+    .btn.small{padding:8px 10px;font-weight:600}
+    main .card{
+      background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);
+      border-radius:var(--radius);padding:20px;margin-top:16px;
+    }
+    h1{margin:8px 0 6px 0;font-size:1.6rem}
+    p.sub{margin:0 0 14px 0;color:var(--muted)}
+    form .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    label{font-weight:700}
+    input[type="url"], input[type="text"]{
+      width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text)
+    }
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{
+      user-select:none;padding:8px 12px;border-radius:999px;border:1px solid var(--border);
+      background:var(--chip);cursor:pointer;font-weight:700;color:#0b1220
+    }
+    .chip[aria-checked="true"]{background:var(--chip-active);border-color:#93c5fd}
+    .hint{color:var(--warn);font-size:.9rem}
+    .muted{color:var(--muted)}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    pre#output{
+      background:#0b1220;color:#e5e7eb;padding:14px;border-radius:10px;overflow:auto;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.95rem;max-height:420px
+    }
+    footer{color:var(--muted);font-size:.9rem;margin:24px 0}
+    .services-box{background:var(--primary-weak);padding:12px;border-radius:10px;border:1px dashed #93c5fd}
+    .actions{display:flex;gap:12px;flex-wrap:wrap}
+    @media (min-width:720px){
+      form .grid{grid-template-columns:1.4fr 1fr}
+      .span2{grid-column:1 / span 2}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container topbar">
+      <div class="left-actions">
+        <button class="btn small" onclick="history.back()">◀︎ رجوع</button>
+        <a class="btn small ghost" href="https://anasrashed.com" rel="noopener">الرئيسية</a>
+      </div>
+      <img class="logo" src="https://i.imgur.com/meUEoP7.png" alt="شعار" onerror="this.onerror=null;this.src='https://i.imgur.com/meUEoP7.jpg'">
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1>أداة Ping للروابط (بدون IndexNow)</h1>
+      <p class="sub">أرسل إشعارات Ping لخدمات متعددة لتسريع اكتشاف صفحات متجرك أو مدونتك — دون الاعتماد على IndexNow.</p>
+
+      <form id="pingForm" onsubmit="event.preventDefault(); submitPing();">
+        <div class="grid">
+          <div class="span2">
+            <label for="url">رابط الصفحة *</label>
+            <input id="url" name="url" type="url" required placeholder="https://example.com/post-or-product">
+          </div>
+
+          <div>
+            <label for="siteName">اسم الموقع (اختياري)</label>
+            <input id="siteName" name="siteName" type="text" placeholder="اسم موقعك">
+          </div>
+
+          <div>
+            <label for="homeUrl">رابط الرئيسية (اختياري)</label>
+            <input id="homeUrl" name="homeUrl" type="url" placeholder="https://example.com/">
+          </div>
+
+          <div class="span2">
+            <label for="sitemapUrl">رابط خريطة الموقع (اختياري)</label>
+            <input id="sitemapUrl" name="sitemapUrl" type="url" placeholder="https://example.com/sitemap.xml">
+          </div>
+
+          <div class="span2 services-box">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+              <strong>الخدمات المختارة</strong>
+              <span class="muted">اضغط على الشيب لتعطيل/تفعيل</span>
+            </div>
+            <div class="chips" id="chips">
+              <span class="chip" data-id="pingomatic" role="checkbox" aria-checked="true">Ping-O-Matic (XML-RPC)</span>
+              <span class="chip" data-id="twingly" role="checkbox" aria-checked="true">Twingly (XML-RPC)</span>
+              <span class="chip" data-id="weblogs" role="checkbox" aria-checked="true">Weblogs (XML-RPC)</span>
+              <span class="chip" data-id="bingSitemap" role="checkbox" aria-checked="true">Bing Sitemap Ping</span>
+              <span class="chip" data-id="warmup" role="checkbox" aria-checked="true">تسخين الرابط (GET)</span>
+            </div>
+            <div class="hint" style="margin-top:8px">تنبيه: لن نستخدم IndexNow إطلاقًا.</div>
+          </div>
+
+          <div class="span2 actions">
+            <button class="btn primary" type="submit">إرسال Ping</button>
+            <button class="btn" type="button" onclick="fillDemo()">تجربة سريعة</button>
+          </div>
+
+          <div class="span2">
+            <label>نتيجة JSON</label>
+            <pre id="output" aria-live="polite" tabindex="0">{}</pre>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <footer>
+      ملاحظة: الأداة لا تضمن الفهرسة، لكنها قد تُسرّع الاكتشاف (discovery).
+    </footer>
+  </main>
+
+  <script>
+    // نقطة الاستدعاء للـ Worker
+    const WORKER_ENDPOINT = 'https://ping.anasrashed.com';
+
+    // تفعيل/تعطيل الشيبس
+    document.getElementById('chips').addEventListener('click', (e) => {
+      const el = e.target.closest('.chip');
+      if (!el) return;
+      const checked = el.getAttribute('aria-checked') === 'true';
+      el.setAttribute('aria-checked', String(!checked));
+    });
+
+    // تعبئة مثال سريع
+    function fillDemo(){
+      document.getElementById('url').value = 'https://anasrashed.com/';
+      document.getElementById('siteName').value = 'مدونة أنس راشد';
+      document.getElementById('homeUrl').value = 'https://anasrashed.com/';
+      document.getElementById('sitemapUrl').value = 'https://anasrashed.com/sitemap.xml';
+      // تفعيل جميع الشيبس
+      document.querySelectorAll('.chip').forEach(ch => ch.setAttribute('aria-checked','true'));
+    }
+
+    function buildServices(){
+      const obj = { pingomatic:false, twingly:false, weblogs:false, bingSitemap:false, warmup:false };
+      document.querySelectorAll('.chip').forEach(ch => {
+        const id = ch.getAttribute('data-id');
+        const on = ch.getAttribute('aria-checked') === 'true';
+        if (id in obj) obj[id] = on;
+      });
+      return obj;
+    }
+
+    async function submitPing(){
+      const out = document.getElementById('output');
+      out.textContent = '... جاري الإرسال';
+      const url = document.getElementById('url').value.trim();
+      const siteName = document.getElementById('siteName').value.trim();
+      const homeUrl = document.getElementById('homeUrl').value.trim();
+      const sitemapUrl = document.getElementById('sitemapUrl').value.trim();
+      const services = buildServices();
+
+      if (!url){
+        out.textContent = JSON.stringify({ ok:false, error:'يرجى إدخال رابط الصفحة.' }, null, 2);
+        return;
+      }
+
+      const payload = {
+        url,
+        siteName: siteName || undefined,
+        homeUrl: homeUrl || undefined,
+        sitemapUrl: sitemapUrl || undefined,
+        services
+      };
+
+      try{
+        const res = await fetch(WORKER_ENDPOINT, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(()=>({ ok:false, error:'Invalid JSON response' }));
+        out.textContent = JSON.stringify(data, null, 2);
+        out.focus();
+      }catch(err){
+        out.textContent = JSON.stringify({ ok:false, error: String(err?.message || err) }, null, 2);
+      }
+    }
+  </script>
+</body>
+</html>
