@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="color-scheme" content="light">
   <title>Ping-Me — أداة Ping للفهرسة</title>
-  <meta name="description" content="أرسل HTTP Ping لآلاف الروابط على دفعات واعرض الحالة لحظيًا عبر SSE. بدون IndexNow.">
+  <meta name="description" content="أرسل HTTP Ping لروابطك على دفعات واعرض الحالة لحظيًا عبر SSE — بدون IndexNow.">
 
-  <!-- اختياري: عيّن قاعدة الـAPI لو على دومين مختلف -->
+  <!-- عيّن قاعدة الـAPI لو على دومين مختلف -->
   <!-- <meta name="api-base" content="https://ping.anasrashed.com"> -->
 
   <link rel="preconnect" href="https://ping.anasrashed.com" />
@@ -100,7 +100,7 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
         <summary>كيف يعمل؟</summary>
         <div>
           يتم إرسال <strong>HEAD</strong> أولًا، وإذا لم ينجح يتم استخدام <strong>GET مع Range 0-0</strong> لتقليل الباندويث.  
-          يتم التجزئة تلقائيًا إلى دفعات (افتراضيًا 20 رابط لكل دفعة) لتجاوز حدود Cloudflare ثم بث النتائج لحظيًا عبر SSE. 💡
+          التجزئة تلقائيًا إلى دفعات (20 رابط) لتجاوز حدود Cloudflare مع بث النتائج لحظيًا عبر SSE.
         </div>
       </details>
 
@@ -156,8 +156,8 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
     const summary  = document.getElementById('summary');
 
     // ------- حالة الواجهة -------
-    let controller = null;       // لإيقاف الدفعة الجارية
-    let stopped    = false;      // لإيقاف الدُفَع التالية
+    let controller = null; // لإيقاف الدفعة الجارية
+    let stopped    = false; // لإيقاف الدُفَع التالية
     let results = [];
     let total = 0, done = 0, okCount = 0, failCount = 0;
 
@@ -220,7 +220,7 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
       return /[,"\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
     }
 
-    // ------- فحص الصحة (اختياري لكنه مفيد للرسائل) -------
+    // ------- فحص الصحة -------
     async function checkHealth(){
       try{
         const r = await fetch(API_BASE + '/api/health', { cache:'no-store' });
@@ -242,7 +242,6 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
 
       const BATCH_SIZE = 20; // متوافق مع الخادم
       try {
-        // تأكد أن API متاح قبل البدء (يعطي رسالة أوضح من 404)
         await checkHealth();
 
         for(let i=0; i<urls.length; i+=BATCH_SIZE){
@@ -254,12 +253,7 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
           summary.textContent = `اكتمل الإرسال ✔️ — إجمالي: ${total}, نجاح: ${okCount}, فشل: ${failCount}`;
         }
       } catch (err){
-        if(stopped){
-          summary.textContent = 'تم الإيقاف من قبل المستخدم.';
-        }else{
-          // رسائل أوضح عند 404 أو خطأ اتصال
-          summary.textContent = 'حدث خطأ أثناء الإرسال: ' + (err?.message || err);
-        }
+        summary.textContent = 'حدث خطأ أثناء الإرسال: ' + (err?.message || err);
       } finally {
         setBusy(false);
         exportBtn.disabled = results.length === 0;
@@ -336,17 +330,14 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
           pos = nl + 1;
 
           if(line === ''){
-            flushEvent();
-            continue;
+            flushEvent(); continue;
           }
           if(line.startsWith(':')) continue;
           if(line.startsWith('event:')){
-            eventName = line.slice(6).trim() || 'message';
-            continue;
+            eventName = line.slice(6).trim() || 'message'; continue;
           }
           if(line.startsWith('data:')){
-            dataLines.push(line.slice(5).trim());
-            continue;
+            dataLines.push(line.slice(5).trim()); continue;
           }
         }
         buf = buf.slice(pos);
@@ -369,12 +360,6 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
           bar.style.width = pct + '%';
           bar.parentElement.setAttribute('aria-valuenow', String(pct));
           summary.textContent = `تم: ${done}/${total} — نجاح: ${okCount} — فشل: ${failCount}`;
-        } else if(event === 'hello'){
-          // لا شيء
-        } else if(event === 'summary'){
-          // لا شيء
-        } else if(event === 'done'){
-          // لا شيء
         }
       }catch{
         // تجاهل أحداث غير قابلة للتحليل
