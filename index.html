@@ -1,222 +1,315 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <title>أداة Ping للروابط (بدون IndexNow)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="أرسل إشعارات Ping لخدمات متعددة لتسريع اكتشاف صفحات متجرك أو مدونتك — دون الاعتماد على IndexNow.">
-  <style>
-    :root{
-      --bg: #f7f8fa;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted:#6b7280;
-      --primary:#2563eb;
-      --primary-weak:#eff6ff;
-      --border:#e5e7eb;
-      --chip:#f1f5f9;
-      --chip-active:#dbeafe;
-      --mono:#111827;
-      --ok:#16a34a;
-      --err:#dc2626;
-      --warn:#b45309;
-      --shadow: 0 8px 24px rgba(0,0,0,.06);
-      --radius: 12px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Noto Kufi Arabic",Tahoma,Arial,sans-serif;line-height:1.6;
-    }
-    header{
-      position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--border);
-    }
-    .container{max-width:920px;margin:0 auto;padding:16px}
-    .topbar{display:flex;align-items:center;gap:12px;justify-content:space-between}
-    .left-actions{display:flex;align-items:center;gap:8px}
-    .logo{
-      height:36px;width:auto;object-fit:contain;
-    }
-    .btn{
-      appearance:none;border:1px solid var(--border);background:#fff;color:var(--text);
-      padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600;
-      transition:background .2s,border-color .2s,transform .04s;
-    }
-    .btn:active{transform:translateY(1px)}
-    .btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
-    .btn.ghost{background:transparent}
-    .btn.small{padding:8px 10px;font-weight:600}
-    main .card{
-      background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);
-      border-radius:var(--radius);padding:20px;margin-top:16px;
-    }
-    h1{margin:8px 0 6px 0;font-size:1.6rem}
-    p.sub{margin:0 0 14px 0;color:var(--muted)}
-    form .grid{display:grid;grid-template-columns:1fr;gap:12px}
-    label{font-weight:700}
-    input[type="url"], input[type="text"]{
-      width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text)
-    }
-    .chips{display:flex;flex-wrap:wrap;gap:8px}
-    .chip{
-      user-select:none;padding:8px 12px;border-radius:999px;border:1px solid var(--border);
-      background:var(--chip);cursor:pointer;font-weight:700;color:#0b1220
-    }
-    .chip[aria-checked="true"]{background:var(--chip-active);border-color:#93c5fd}
-    .hint{color:var(--warn);font-size:.9rem}
-    .muted{color:var(--muted)}
-    .row{display:flex;gap:8px;flex-wrap:wrap}
-    pre#output{
-      background:#0b1220;color:#e5e7eb;padding:14px;border-radius:10px;overflow:auto;
-      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.95rem;max-height:420px
-    }
-    footer{color:var(--muted);font-size:.9rem;margin:24px 0}
-    .services-box{background:var(--primary-weak);padding:12px;border-radius:10px;border:1px dashed #93c5fd}
-    .actions{display:flex;gap:12px;flex-wrap:wrap}
-    @media (min-width:720px){
-      form .grid{grid-template-columns:1.4fr 1fr}
-      .span2{grid-column:1 / span 2}
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ping-Me — أداة فهرسة وروابط Ping</title>
+  <meta name="description" content="أرسل HTTP Ping لما يصل إلى 200 رابط واعرض حالة كل رابط لحظيًا.">
+  <link rel="preconnect" href="https://ping.anasrashed.com" />
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <header>
-    <div class="container topbar">
-      <div class="left-actions">
-        <button class="btn small" onclick="history.back()">◀︎ رجوع</button>
-        <a class="btn small ghost" href="https://anasrashed.com" rel="noopener">الرئيسية</a>
-      </div>
-      <img class="logo" src="https://i.imgur.com/meUEoP7.png" alt="شعار" onerror="this.onerror=null;this.src='https://i.imgur.com/meUEoP7.jpg'">
-    </div>
+  <header class="container">
+    <h1>Ping-Me</h1>
+    <p class="sub">أداة Ping للفهرسة — بدون IndexNow ✔️</p>
   </header>
 
-  <main class="container">
-    <section class="card">
-      <h1>أداة Ping للروابط (بدون IndexNow)</h1>
-      <p class="sub">أرسل إشعارات Ping لخدمات متعددة لتسريع اكتشاف صفحات متجرك أو مدونتك — دون الاعتماد على IndexNow.</p>
+  <main class="container card">
+    <section class="controls">
+      <label for="urls">الصق حتى ٢٠٠ رابط (كل رابط في سطر):</label>
+      <textarea id="urls" placeholder="https://example.com/page-1
+https://example.com/page-2
+https://another.site/..." spellcheck="false"></textarea>
 
-      <form id="pingForm" onsubmit="event.preventDefault(); submitPing();">
-        <div class="grid">
-          <div class="span2">
-            <label for="url">رابط الصفحة *</label>
-            <input id="url" name="url" type="url" required placeholder="https://example.com/post-or-product">
-          </div>
-
-          <div>
-            <label for="siteName">اسم الموقع (اختياري)</label>
-            <input id="siteName" name="siteName" type="text" placeholder="اسم موقعك">
-          </div>
-
-          <div>
-            <label for="homeUrl">رابط الرئيسية (اختياري)</label>
-            <input id="homeUrl" name="homeUrl" type="url" placeholder="https://example.com/">
-          </div>
-
-          <div class="span2">
-            <label for="sitemapUrl">رابط خريطة الموقع (اختياري)</label>
-            <input id="sitemapUrl" name="sitemapUrl" type="url" placeholder="https://example.com/sitemap.xml">
-          </div>
-
-          <div class="span2 services-box">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
-              <strong>الخدمات المختارة</strong>
-              <span class="muted">اضغط على الشيب لتعطيل/تفعيل</span>
-            </div>
-            <div class="chips" id="chips">
-              <span class="chip" data-id="pingomatic" role="checkbox" aria-checked="true">Ping-O-Matic (XML-RPC)</span>
-              <span class="chip" data-id="twingly" role="checkbox" aria-checked="true">Twingly (XML-RPC)</span>
-              <span class="chip" data-id="weblogs" role="checkbox" aria-checked="true">Weblogs (XML-RPC)</span>
-              <span class="chip" data-id="bingSitemap" role="checkbox" aria-checked="true">Bing Sitemap Ping</span>
-              <span class="chip" data-id="warmup" role="checkbox" aria-checked="true">تسخين الرابط (GET)</span>
-            </div>
-            <div class="hint" style="margin-top:8px">تنبيه: لن نستخدم IndexNow إطلاقًا.</div>
-          </div>
-
-          <div class="span2 actions">
-            <button class="btn primary" type="submit">إرسال Ping</button>
-            <button class="btn" type="button" onclick="fillDemo()">تجربة سريعة</button>
-          </div>
-
-          <div class="span2">
-            <label>نتيجة JSON</label>
-            <pre id="output" aria-live="polite" tabindex="0">{}</pre>
-          </div>
+      <div class="row gap">
+        <div class="info">
+          <span id="count">0</span>/<span>200</span> رابط
         </div>
-      </form>
+        <div class="grow"></div>
+        <button id="startBtn" class="primary">ابدأ الإرسال</button>
+        <button id="cancelBtn" class="secondary" disabled>إيقاف</button>
+        <button id="exportBtn" class="ghost" disabled>تصدير CSV</button>
+      </div>
+
+      <div class="hint">
+        يتم إرسال <strong>HEAD</strong> أولًا، وفي حال الرفض أو الخطأ يتم استخدام <strong>GET برينج 0-0</strong> لتقليل الباندويث. الحد الأقصى المتزامن: 10، المهلة لكل رابط: 10 ثوانٍ.
+      </div>
+
+      <div class="progress">
+        <div id="bar" class="bar" style="width:0%"></div>
+      </div>
+      <div id="summary" class="summary">
+        في الانتظار…
+      </div>
     </section>
 
-    <footer>
-      ملاحظة: الأداة لا تضمن الفهرسة، لكنها قد تُسرّع الاكتشاف (discovery).
-    </footer>
+    <section>
+      <div class="table-wrap">
+        <table id="results">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>الرابط</th>
+              <th>النتيجة</th>
+              <th>الكود</th>
+              <th>الطريقة</th>
+              <th>الوقت (ms)</th>
+              <th>الرابط النهائي</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
-  <script>
-    // نقطة الاستدعاء للـ Worker
-    const WORKER_ENDPOINT = 'https://ping.anasrashed.com';
+  <footer class="container foot">
+    <span>المضيف: <a href="https://ping.anasrashed.com" target="_blank" rel="noopener">ping.anasrashed.com</a></span>
+    <span>المشروع: <strong>ping-me</strong></span>
+  </footer>
 
-    // تفعيل/تعطيل الشيبس
-    document.getElementById('chips').addEventListener('click', (e) => {
-      const el = e.target.closest('.chip');
-      if (!el) return;
-      const checked = el.getAttribute('aria-checked') === 'true';
-      el.setAttribute('aria-checked', String(!checked));
-    });
-
-    // تعبئة مثال سريع
-    function fillDemo(){
-      document.getElementById('url').value = 'https://anasrashed.com/';
-      document.getElementById('siteName').value = 'مدونة أنس راشد';
-      document.getElementById('homeUrl').value = 'https://anasrashed.com/';
-      document.getElementById('sitemapUrl').value = 'https://anasrashed.com/sitemap.xml';
-      // تفعيل جميع الشيبس
-      document.querySelectorAll('.chip').forEach(ch => ch.setAttribute('aria-checked','true'));
-    }
-
-    function buildServices(){
-      const obj = { pingomatic:false, twingly:false, weblogs:false, bingSitemap:false, warmup:false };
-      document.querySelectorAll('.chip').forEach(ch => {
-        const id = ch.getAttribute('data-id');
-        const on = ch.getAttribute('aria-checked') === 'true';
-        if (id in obj) obj[id] = on;
-      });
-      return obj;
-    }
-
-    async function submitPing(){
-      const out = document.getElementById('output');
-      out.textContent = '... جاري الإرسال';
-      const url = document.getElementById('url').value.trim();
-      const siteName = document.getElementById('siteName').value.trim();
-      const homeUrl = document.getElementById('homeUrl').value.trim();
-      const sitemapUrl = document.getElementById('sitemapUrl').value.trim();
-      const services = buildServices();
-
-      if (!url){
-        out.textContent = JSON.stringify({ ok:false, error:'يرجى إدخال رابط الصفحة.' }, null, 2);
-        return;
-      }
-
-      const payload = {
-        url,
-        siteName: siteName || undefined,
-        homeUrl: homeUrl || undefined,
-        sitemapUrl: sitemapUrl || undefined,
-        services
-      };
-
-      try{
-        const res = await fetch(WORKER_ENDPOINT, {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json().catch(()=>({ ok:false, error:'Invalid JSON response' }));
-        out.textContent = JSON.stringify(data, null, 2);
-        out.focus();
-      }catch(err){
-        out.textContent = JSON.stringify({ ok:false, error: String(err?.message || err) }, null, 2);
-      }
-    }
-  </script>
+  <script src="/app.js" type="module"></script>
 </body>
 </html>
+:root{
+  --bg:#0c0f14;
+  --card:#131823;
+  --muted:#7c8aa5;
+  --text:#e8eefc;
+  --accent:#5ac8fa;
+  --accent-2:#34c759;
+  --danger:#ff453a;
+  --warn:#ffd60a;
+  --border:#1f2633;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;
+  background:linear-gradient(180deg,#0b0f14,#0e1420 40%,#0a0f18);
+  color:var(--text);
+}
+.container{width:min(1100px,92%); margin-inline:auto}
+header{padding:32px 0 8px}
+h1{margin:0;font-weight:800;letter-spacing:.4px}
+.sub{color:var(--muted);margin-top:6px}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:22px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+.controls label{display:block;margin-bottom:10px}
+textarea{
+  width:100%; min-height:180px; resize:vertical;
+  background:#0e1420; color:var(--text);
+  border:1px solid var(--border); border-radius:10px;
+  padding:14px; line-height:1.4; font-family:ui-monospace,Consolas,monospace;
+}
+.row{display:flex; align-items:center; margin-top:12px}
+.gap>*{margin-inline:6px}
+.grow{flex:1}
+button{
+  border:1px solid var(--border); background:#111824; color:var(--text);
+  padding:10px 14px; border-radius:10px; cursor:pointer; transition:.15s transform,.15s opacity
+}
+button:hover{transform:translateY(-1px)}
+button:disabled{opacity:.6; cursor:not-allowed}
+.primary{background:var(--accent); color:#00131b; border-color:transparent; font-weight:700}
+.secondary{background:#1a2332}
+.ghost{background:transparent}
+.hint{color:var(--muted); font-size:.9rem; margin-top:8px}
+.progress{margin-top:14px; height:8px; background:#0e1420; border:1px solid var(--border); border-radius:999px; overflow:hidden}
+.bar{height:100%; background:linear-gradient(90deg,var(--accent),#8be0ff)}
+.summary{margin-top:10px; color:var(--muted)}
+
+.table-wrap{margin-top:18px; overflow:auto; border:1px solid var(--border); border-radius:12px}
+table{width:100%; border-collapse:collapse; font-size:.95rem}
+th,td{padding:10px 12px; border-bottom:1px solid var(--border); text-align:start}
+th{position:sticky; top:0; background:#141b28; z-index:2}
+tbody tr:hover{background:#111826}
+.status{
+  font-weight:700; padding:.25rem .55rem; border-radius:999px; display:inline-block
+}
+.ok{background:rgba(52,199,89,.15); color:var(--accent-2); border:1px solid rgba(52,199,89,.35)}
+.fail{background:rgba(255,69,58,.12); color:var(--danger); border:1px solid rgba(255,69,58,.35)}
+.warn{background:rgba(255,214,10,.12); color:var(--warn); border:1px solid rgba(255,214,10,.35)}
+.link{color:#9bd1ff; text-decoration:none}
+.link:hover{text-decoration:underline}
+.foot{display:flex; justify-content:space-between; align-items:center; color:var(--muted); padding:28px 0 40px}
+@media (max-width:640px){
+  .sub{font-size:.95rem}
+  td:nth-child(7), th:nth-child(7){display:none}
+}
+/* Ping-Me Frontend - https://ping.anasrashed.com */
+const textarea = document.getElementById('urls');
+const countEl  = document.getElementById('count');
+const startBtn = document.getElementById('startBtn');
+const cancelBtn= document.getElementById('cancelBtn');
+const exportBtn= document.getElementById('exportBtn');
+const tbody    = document.querySelector('#results tbody');
+const bar      = document.getElementById('bar');
+const summary  = document.getElementById('summary');
+
+let controller = null;
+let results = [];
+let total = 0, done = 0, okCount = 0, failCount = 0;
+
+function sanitizeLines(text){
+  return text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+}
+function toAbsoluteHttp(url){
+  try{
+    // إذا لم تبدأ بـ http(s) سنفترض https://
+    if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    const u = new URL(url);
+    if(u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+    return u.toString();
+  }catch{ return null; }
+}
+function updateCounter(){
+  const lines = sanitizeLines(textarea.value);
+  const urls = Array.from(new Set(lines.map(toAbsoluteHttp).filter(Boolean))).slice(0,200);
+  countEl.textContent = String(urls.length);
+  return urls;
+}
+textarea.addEventListener('input', updateCounter);
+
+function resetUI(){
+  results = [];
+  total = done = okCount = failCount = 0;
+  tbody.innerHTML = '';
+  bar.style.width = '0%';
+  summary.textContent = 'في الانتظار…';
+  exportBtn.disabled = true;
+}
+function addRow(r, idx){
+  const tr = document.createElement('tr');
+  const statusClass = r.ok ? 'ok' : (r.status >= 300 && r.status < 400 ? 'warn' : 'fail');
+  tr.innerHTML = `
+    <td>${idx+1}</td>
+    <td><a class="link" href="${escapeHtml(r.inputUrl)}" target="_blank" rel="noopener">${escapeHtml(truncate(r.inputUrl, 68))}</a></td>
+    <td><span class="status ${statusClass}">${r.ok ? 'نجاح' : (r.status >= 300 && r.status < 400 ? 'تحويل' : 'فشل')}</span></td>
+    <td>${r.status ?? '-'}</td>
+    <td>${r.methodUsed}</td>
+    <td>${r.timeMs ?? '-'}</td>
+    <td>${r.finalUrl ? `<a class="link" href="${escapeHtml(r.finalUrl)}" target="_blank" rel="noopener">${escapeHtml(truncate(r.finalUrl, 60))}</a>` : '-'}</td>
+  `;
+  tbody.appendChild(tr);
+}
+function truncate(s, n){ return s.length>n? s.slice(0,n-1)+'…' : s; }
+function escapeHtml(s){ return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function setBusy(b){
+  startBtn.disabled = b;
+  cancelBtn.disabled = !b;
+  textarea.disabled = b;
+}
+
+startBtn.addEventListener('click', async () => {
+  const urls = updateCounter();
+  if(urls.length === 0){ alert('أضف رابطًا واحدًا على الأقل. ❗'); return; }
+  resetUI();
+  total = urls.length;
+  setBusy(true);
+
+  controller = new AbortController();
+  const signal = controller.signal;
+
+  try{
+    const resp = await fetch('/api/ping', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'Accept':'text/event-stream'},
+      body: JSON.stringify({ urls }),
+      signal
+    });
+
+    if(!resp.ok || !resp.body){
+      throw new Error(`تعذر البدء: ${resp.status} ${resp.statusText}`);
+    }
+
+    // قراءة SSE يدويًا
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while(true){
+      const {value, done: readerDone} = await reader.read();
+      if(readerDone) break;
+      buffer += decoder.decode(value, {stream:true});
+
+      let idx;
+      while((idx = buffer.indexOf('\n\n')) !== -1){
+        const eventChunk = buffer.slice(0, idx).trim();
+        buffer = buffer.slice(idx + 2);
+        handleSSE(eventChunk);
+      }
+    }
+  }catch(err){
+    if(signal.aborted){
+      summary.textContent = 'تم الإيقاف من قبل المستخدم.';
+    }else{
+      summary.textContent = 'حدث خطأ أثناء الإرسال: ' + err.message;
+    }
+  }finally{
+    setBusy(false);
+    exportBtn.disabled = results.length === 0;
+  }
+});
+
+cancelBtn.addEventListener('click', () => {
+  if(controller){ controller.abort(); }
+});
+
+exportBtn.addEventListener('click', () => {
+  if(!results.length) return;
+  const headers = ['#','inputUrl','finalUrl','ok','status','statusText','methodUsed','timeMs'];
+  const rows = results.map((r,i)=>[
+    i+1,r.inputUrl,r.finalUrl||'',r.ok,r.status??'',r.statusText||'',r.methodUsed||'',r.timeMs??''
+  ]);
+  const csv = [headers, ...rows].map(r=>r.map(csvEscape).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ping-results-${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+function csvEscape(val){
+  const s = String(val??'');
+  return /[,"\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+}
+
+function handleSSE(chunk){
+  // صيغة SSE: أسطر event: / data:
+  let eventName = 'message';
+  const lines = chunk.split('\n');
+  let data = '';
+  for(const line of lines){
+    if(line.startsWith('event:')) eventName = line.slice(6).trim();
+    else if(line.startsWith('data:')) data += line.slice(5).trim();
+  }
+  if(!data) return;
+
+  try{
+    const payload = JSON.parse(data);
+    if(eventName === 'result'){
+      results.push(payload);
+      const idx = results.length - 1;
+      addRow(payload, idx);
+      done++;
+      if(payload.ok) okCount++; else failCount++;
+      const pct = Math.round((done/total)*100);
+      bar.style.width = pct + '%';
+      summary.textContent = `تم: ${done}/${total} — نجاح: ${okCount} — فشل: ${failCount}`;
+    }else if(eventName === 'summary'){
+      // تحديث ملخص نهائي إن لزم
+      summary.textContent = `اكتمل الإرسال ✔️ — إجمالي: ${payload.total}, نجاح: ${payload.ok}, فشل: ${payload.fail}`;
+    }
+  }catch{}
+}
+
+// تحديث العدّاد مبدئيًا
+updateCounter();
