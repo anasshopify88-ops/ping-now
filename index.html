@@ -6,6 +6,10 @@
   <meta name="color-scheme" content="light">
   <title>Ping-Me — أداة Ping للفهرسة</title>
   <meta name="description" content="أرسل HTTP Ping لآلاف الروابط على دفعات واعرض الحالة لحظيًا عبر SSE. بدون IndexNow.">
+
+  <!-- اختياري: عيّن قاعدة الـAPI لو على دومين مختلف -->
+  <!-- <meta name="api-base" content="https://ping.anasrashed.com"> -->
+
   <link rel="preconnect" href="https://ping.anasrashed.com" />
   <style>
     :root{
@@ -127,11 +131,20 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
   </main>
 
   <footer class="container foot">
-    <span>المضيف: <a href="https://ping.anasrashed.com" target="_blank" rel="noopener">ping.anasrashed.com</a></span>
+    <span>المضيف: <a href="#" id="hostLink" target="_blank" rel="noopener"></a></span>
     <span>المشروع: <strong>ping-me</strong></span>
   </footer>
 
   <script>
+    // ------- إعدادات -------
+    const META_API = document.querySelector('meta[name="api-base"]')?.content?.trim();
+    const API_BASE = META_API || location.origin;
+
+    // عرض المضيف في الفوتر
+    const hostLink = document.getElementById('hostLink');
+    hostLink.textContent = new URL(API_BASE).host;
+    hostLink.href = API_BASE;
+
     // ------- عناصر DOM -------
     const textarea = document.getElementById('urls');
     const countEl  = document.getElementById('count');
@@ -173,6 +186,8 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
       results = [];
       total = done = okCount = failCount = 0;
       stopped = false;
+      if (controller) { try{ controller.abort(); }catch{} }
+      controller = null;
       tbody.innerHTML = '';
       bar.style.width = '0%';
       bar.parentElement.setAttribute('aria-valuenow','0');
@@ -205,6 +220,17 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
       return /[,"\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
     }
 
+    // ------- فحص الصحة (اختياري لكنه مفيد للرسائل) -------
+    async function checkHealth(){
+      try{
+        const r = await fetch(API_BASE + '/api/health', { cache:'no-store' });
+        if(!r.ok) throw new Error(r.status + ' ' + r.statusText);
+        return true;
+      }catch(e){
+        throw new Error('API غير متاح على: ' + API_BASE + ' — ' + e.message);
+      }
+    }
+
     // ------- تشغيل الإرسال (دفعات) -------
     startBtn.addEventListener('click', async () => {
       const urls = updateCounter();
@@ -216,6 +242,9 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
 
       const BATCH_SIZE = 20; // متوافق مع الخادم
       try {
+        // تأكد أن API متاح قبل البدء (يعطي رسالة أوضح من 404)
+        await checkHealth();
+
         for(let i=0; i<urls.length; i+=BATCH_SIZE){
           if(stopped) break;
           const batch = urls.slice(i, i+BATCH_SIZE);
@@ -228,6 +257,7 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
         if(stopped){
           summary.textContent = 'تم الإيقاف من قبل المستخدم.';
         }else{
+          // رسائل أوضح عند 404 أو خطأ اتصال
           summary.textContent = 'حدث خطأ أثناء الإرسال: ' + (err?.message || err);
         }
       } finally {
@@ -239,7 +269,7 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
     // ------- إيقاف -------
     cancelBtn.addEventListener('click', () => {
       stopped = true;
-      if(controller){ controller.abort(); }
+      if(controller){ try{ controller.abort(); }catch{} }
     });
 
     // ------- تصدير CSV -------
@@ -258,12 +288,12 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
       URL.revokeObjectURL(a.href);
     });
 
-    // ------- قارئ SSE عام -------
+    // ------- قارئ SSE -------
     async function streamBatch(urls){
       controller = new AbortController();
       const signal = controller.signal;
 
-      const resp = await fetch('/api/ping', {
+      const resp = await fetch(API_BASE + '/api/ping', {
         method: 'POST',
         headers: {'Content-Type':'application/json', 'Accept':'text/event-stream'},
         body: JSON.stringify({ urls }),
@@ -340,11 +370,11 @@ another.site/blog/post" spellcheck="false" inputmode="url"></textarea>
           bar.parentElement.setAttribute('aria-valuenow', String(pct));
           summary.textContent = `تم: ${done}/${total} — نجاح: ${okCount} — فشل: ${failCount}`;
         } else if(event === 'hello'){
-          // معلومات تمهيدية للدفعة - لا حاجة لعرضها
+          // لا شيء
         } else if(event === 'summary'){
-          // خلاصة الدفعة فقط، نستخدم العداد الشامل بدلاً منها
+          // لا شيء
         } else if(event === 'done'){
-          // انتهاء الدُفعة، تُستكمل الدفعات التالية تلقائيًا
+          // لا شيء
         }
       }catch{
         // تجاهل أحداث غير قابلة للتحليل
